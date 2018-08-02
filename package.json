@@ -1,0 +1,12 @@
+{
+  "name": "appx-vuex-lite",
+  "version": "0.0.2",
+  "description": "appx-vuex-lite-for-appx",
+  "main": "dist/index.js",
+  "scripts": {
+    
+  },
+  "prepublish": "tnpm run build && tnpm version patch",
+  "author": "caifeng.zxq@antfin.com",
+  "license": "ISC"
+}
