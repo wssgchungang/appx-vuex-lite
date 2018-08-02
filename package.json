@@ -4,9 +4,9 @@
   "description": "appx-vuex-lite-for-appx",
   "main": "dist/index.js",
   "scripts": {
-    
+    "build": "echo build in alipay"
   },
-  "prepublish": "tnpm run build && tnpm version patch",
+  "prepublish": "npm run build && npm version patch",
   "author": "caifeng.zxq@antfin.com",
   "license": "ISC"
 }

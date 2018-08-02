@@ -1,5 +1,5 @@
 let actionsCache = {};
-const EventEmitter = require('./emitter');
+const EventEmitter = require('./emitter').default;
 const emitter = new EventEmitter();
 
 // for dev tools in future
