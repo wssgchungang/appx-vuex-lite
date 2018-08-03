@@ -44,6 +44,7 @@ const mutationCache = {
 };
 
 function createHelpers(actions) {
+  const that = this;
   return {
     commit(type, payload, mutationFunc = 'default') {
       if (!type) {
@@ -83,10 +84,8 @@ function createHelpers(actions) {
             func.apply(self, args);
           }
         },
-        state: {
-          get data() {
-            return self.data;
-          }
+        get state() {
+          return self.data;
         }
       }, payload);
       // 保证结果为一个 promise
@@ -96,7 +95,8 @@ function createHelpers(actions) {
       return Promise.resolve(res);
     },
     get state() {
-      return this.data;
+      console.log('ttt', that);
+      return that.data;
     }
   };
 }
@@ -155,6 +155,6 @@ export default function Store(store) {
   return function(config) {
     const { data = {} } = config;
     Object.assign(state, data);
-    return storeHelper(actions, config);
+    return storeHelper.call(this, actions, config);
   };
 }
