@@ -1,10 +1,10 @@
 {
   "name": "appx-vuex-lite",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "appx-vuex-lite-for-appx",
   "main": "dist/index.js",
   "scripts": {
-    "build": "echo build in alipay"
+    "build": "echo build"
   },
   "prepublish": "npm run build && npm version patch",
   "author": "caifeng.zxq@antfin.com",

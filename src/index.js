@@ -94,6 +94,9 @@ function createHelpers(actions) {
         return res;
       }
       return Promise.resolve(res);
+    },
+    get state() {
+      return this.data;
     }
   };
 }
