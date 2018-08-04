@@ -1,5 +1,6 @@
 let actionsCache = {};
-const EventEmitter = require('./emitter').default;
+import EventEmitter from './emitter';
+// const EventEmitter = require('./emitter').default;
 const emitter = new EventEmitter();
 
 // for dev tools in future
@@ -44,7 +45,7 @@ const mutationCache = {
 };
 
 function createHelpers(actions) {
-  const that = this;
+//   const that = this;
   return {
     commit(type, payload, mutationFunc = 'default') {
       if (!type) {
@@ -65,6 +66,7 @@ function createHelpers(actions) {
       return this.data;
     },
     dispatch(type, payload) {
+        console.log('tt', this);
       const actionCache = Object.assign({}, actions, this);
       const actionFunc = actionCache[type];
       if (!actionFunc) {
@@ -93,10 +95,6 @@ function createHelpers(actions) {
         return res;
       }
       return Promise.resolve(res);
-    },
-    get state() {
-      console.log('ttt', that);
-      return that.data;
     }
   };
 }
@@ -104,7 +102,7 @@ function createHelpers(actions) {
 export function storeHelper(actions, config) {
   return {
     ...config,
-    ...createHelpers.call(this, actions)
+    ...createHelpers.call(this, actions),
   };
 }
 
@@ -148,13 +146,23 @@ export function connect(options) {
   };
 }
 
-export default function Store(store) {
+export default function Store(store, options) {
   const actions = store.actions || store;
   Object.assign(actionsCache, actions);
   const state = store.state || {};
   return function(config) {
     const { data = {} } = config;
-    Object.assign(state, data);
-    return storeHelper.call(this, actions, config);
+    Object.assign(data, state);
+    const originOnLoad = config.onLoad;
+    // sync state for data
+    config.onLoad = function() {
+      Object.defineProperty(this, 'state', {
+        get: function() { return this.data; }
+      });
+      if (originOnLoad) {
+        originOnLoad.apply(this, arguments);
+      }
+    };
+    return storeHelper(actions, config);
   };
 }
