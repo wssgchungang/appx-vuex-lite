@@ -223,9 +223,7 @@ proto.emitEvent = function emitEvent(evt, args) {
         if (listener.once === true) {
           this.removeListener(evt, listener.listener);
         }
-
-        response = listener.listener.apply(this, args || []);
-
+        response = listener.listener.call(this, args || []);
         if (response === this._getOnceReturnValue()) {
           this.removeListener(evt, listener.listener);
         }
