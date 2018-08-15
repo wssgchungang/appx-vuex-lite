@@ -1,8 +1,8 @@
 {
-  "name": "appx-vuex-lite",
+  "name": "dt-appx-vuex-lite",
   "version": "0.1.2",
   "description": "appx-vuex-lite-for-appx",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "scripts": {
     "build": "echo build"
   },
