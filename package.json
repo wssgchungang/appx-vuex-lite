@@ -7,6 +7,6 @@
     "build": "echo build"
   },
   "prepublish": "npm run build && npm version patch",
-  "author": "caifeng.zxq@antfin.com",
+  "author": "252961256@qq.com",
   "license": "ISC"
 }
