@@ -1,6 +1,6 @@
 {
   "name": "dt-appx-vuex-lite",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "appx-vuex-lite-for-appx",
   "main": "lib/index.js",
   "scripts": {

@@ -1,11 +1,7 @@
 let actionsCache = {};
-let mutationsCache = {};
-let storeInstance = '';
-
 import EventEmitter from './emitter';
 // const EventEmitter = require('./emitter').default;
 const emitter = new EventEmitter();
-
 
 // for dev tools in future
 function logger() {
@@ -43,14 +39,15 @@ export function setIn(state, array, value) {
   return setRecursively(state, array, value, 0);
 }
 
-const innerMutation = {
-    _setIn: (s, d) => setIn(s, d.path, d.value),
-}
+const mutationCache = {
+  default: d => d,
+  setIn: (d, s) => setIn(s, d.path, d.value)
+};
 
-function createHelpers(actions, mutationsObj) {
-  const mutations = Object.assign({}, mutationsCache, mutationsObj, innerMutation);
+function createHelpers(actions) {
+//   const that = this;
   return {
-    commit(type, payload) {
+    commit(type, payload, {mutationFunc = 'default', storageName = ''}) {
       if (!type) {
         throw new Error(`not found ${type} action`);
       }
@@ -58,17 +55,25 @@ function createHelpers(actions, mutationsObj) {
         payload = type;
         type = 'update';
       }
-      // if ()
+      if (storageName && storageName != '') {
+        for (let key in payload) {
+          my.setStorage({
+            key: `${storageName}${key}`,
+            data: payload[key]
+          })
+        }
+      }
       logger('%c prev state', 'color: #9E9E9E; font-weight: bold', this.data);
       logger(`%c mutation: ${type}`, 'color: #03A9F4; font-weight: bold', payload, new Date().getTime());
-      const finalMutation = mutations[type] ? mutations[type](this.data, payload) : payload;
+      const finalMutation = mutationCache[mutationFunc] ? mutationCache[mutationFunc](payload, this.data) : mutationFunc(payload, this.data);
       this.setData(finalMutation);
-      emitter.emitEvent('updateState', { ...this.data });
+      emitter.emitEvent('updateState', this.data);
       logger('%c next state', 'color: #4CAF50; font-weight: bold', this.data);
       // commit 的结果是一个同步行为
       return this.data;
     },
     dispatch(type, payload) {
+        console.log('tt', this);
       const actionCache = Object.assign({}, actions, this);
       const actionFunc = actionCache[type];
       if (!actionFunc) {
@@ -101,52 +106,43 @@ function createHelpers(actions, mutationsObj) {
   };
 }
 
-export function storeHelper(actions, mutations, config) {
+export function storeHelper(actions, config) {
   return {
     ...config,
-    ...createHelpers.call(this, actions, mutations),
+    ...createHelpers.call(this, actions),
   };
 }
-
-function setDataByStateProps(mapStateToProps, data, config) {
-    if (Array.isArray(mapStateToProps)) {
-        const outterState = mapStateToProps.reduce((p, v) => {
-        p[v] = data[v];
-        return p;
-        }, {});
-        return outterState;
-    } else {
-        const outterState = Object.keys(mapStateToProps).reduce((p, v) => {
-        if (isString(mapStateToProps[v])) {
-            p[v] = data[mapStateToProps[v]];
-        } else {
-            p[v] = mapStateToProps[v](data, config);
-        }
-        return p;
-        }, {});
-        return outterState; 
-    }
-}
-
 
 export function connect(options) {
   const { mapStateToProps } = options;
   return function (config) {
     const _didMount = config.didMount;
-    Object.assign(mutationsCache, config.mutations || {});
     return {
       ...config,
       methods: {
         ...config.methods,
-        ...createHelpers.call(this, actionsCache, mutationsCache)
+        ...createHelpers.call(this, actionsCache)
       },
       didMount() {
-        const initialData = setDataByStateProps(mapStateToProps, Store.getInstance.data, config);
-        this.setData(initialData);
         if (mapStateToProps) {
           emitter.addListener('updateState', (data = {}) => {
-            const nextData = setDataByStateProps(mapStateToProps, data, config);
-            this.setData(nextData);
+            if (Array.isArray(mapStateToProps)) {
+              const outterState = mapStateToProps.reduce((p, v) => {
+                p[v] = data[v];
+                return p;
+              }, {});
+              this.setData(outterState);
+            } else {
+              const outterState = Object.keys(mapStateToProps).reduce((p, v) => {
+                if (isString(mapStateToProps[v])) {
+                  p[v] = data[mapStateToProps[v]];
+                } else {
+                  p[v] = mapStateToProps[v](data, config);
+                }
+                return p;
+              }, {});
+              this.setData(outterState);
+            }
           });
         }
         if (typeof _didMount === 'function') {
@@ -159,17 +155,30 @@ export function connect(options) {
 
 export default function Store(store, options) {
   const actions = store.actions || store;
-  const mutations = store.mutations || {};
   Object.assign(actionsCache, actions);
-  Object.assign(mutationsCache, mutations);
-  const state = store.state || {};  
+  const state = store.state || {};
+  const name = store.name || '';
   return function(config) {
-    config.data = config.data || {};
-    Object.assign(config.data, config.state);
+    const { data = {} } = config;
+    if (name != '' && JSON.stringify(state) != '{}') {
+      for (let key in state) {
+        if (!state[key] || JSON.stringify(state[key]) == '[]' || JSON.stringify(state[key]) == '{}' || name) {
+          my.getStorage({
+            key: `${name}${key}`,
+            success: res => {
+              let data = res.data
+              if (data) {
+                state[key] = data
+              }
+            }
+          })
+        }
+      }
+    }
+    Object.assign(data, state);
     const originOnLoad = config.onLoad;
     // sync state for data
     config.onLoad = function() {
-      Store.getInstance = this;
       Object.defineProperty(this, 'state', {
         get: function() { return this.data; }
       });
@@ -177,6 +186,6 @@ export default function Store(store, options) {
         originOnLoad.apply(this, arguments);
       }
     };
-    return storeHelper(actions, mutations, config);
+    return storeHelper(actions, config);
   };
 }
