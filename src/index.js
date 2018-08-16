@@ -168,15 +168,10 @@ export default function Store(store, options) {
     if (name != '' && JSON.stringify(state) != '{}') {
       for (let key in state) {
         if (!state[key] || JSON.stringify(state[key]) == '[]' || JSON.stringify(state[key]) == '{}' || name) {
-          my.getStorage({
-            key: `${name}${key}`,
-            success: res => {
-              let data = res.data
-              if (data) {
-                state[key] = data
-              }
-            }
-          })
+          let res = my.getStorageSync({ key: `${name}${key}` });
+          if (res.data) {
+            state[key] = res.data;
+          }
         }
       }
     }
