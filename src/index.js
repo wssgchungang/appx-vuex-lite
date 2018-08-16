@@ -47,7 +47,7 @@ const mutationCache = {
 function createHelpers(actions) {
 //   const that = this;
   return {
-    commit(type, payload, {mutationFunc = 'default', storageName = ''}) {
+    commit(type, payload, obj) {
       if (!type) {
         throw new Error(`not found ${type} action`);
       }
@@ -55,17 +55,22 @@ function createHelpers(actions) {
         payload = type;
         type = 'update';
       }
-      if (storageName && storageName != '') {
+      let option = {
+        mutationFunc: 'default',
+        storageName: '',
+        ...obj
+      }
+      if (option.storageName && option.storageName != '') {
         for (let key in payload) {
           my.setStorage({
-            key: `${storageName}${key}`,
+            key: `${option.storageName}${key}`,
             data: payload[key]
           })
         }
       }
       logger('%c prev state', 'color: #9E9E9E; font-weight: bold', this.data);
       logger(`%c mutation: ${type}`, 'color: #03A9F4; font-weight: bold', payload, new Date().getTime());
-      const finalMutation = mutationCache[mutationFunc] ? mutationCache[mutationFunc](payload, this.data) : mutationFunc(payload, this.data);
+      const finalMutation = mutationCache[option.mutationFunc] ? mutationCache[option.mutationFunc](payload, this.data) : option.mutationFunc(payload, this.data);
       this.setData(finalMutation);
       emitter.emitEvent('updateState', this.data);
       logger('%c next state', 'color: #4CAF50; font-weight: bold', this.data);
