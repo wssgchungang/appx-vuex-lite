@@ -165,20 +165,21 @@ export default function Store(store, options) {
   const name = store.name || '';
   return function(config) {
     const { data = {} } = config;
-    if (name != '' && JSON.stringify(state) != '{}') {
-      for (let key in state) {
-        if (!state[key] || JSON.stringify(state[key]) == '[]' || JSON.stringify(state[key]) == '{}' || name) {
-          let res = my.getStorageSync({ key: `${name}${key}` });
-          if (res.data) {
-            state[key] = res.data;
-          }
-        }
-      }
-    }
     Object.assign(data, state);
     const originOnLoad = config.onLoad;
     // sync state for data
     config.onLoad = function() {
+      if (name != '' && JSON.stringify(state) != '{}') {
+        for (let key in state) {
+          if (!state[key] || JSON.stringify(state[key]) == '[]' || JSON.stringify(state[key]) == '{}' || name) {
+            let res = my.getStorageSync({ key: `${name}${key}` });
+            if (res.data) {
+              state[key] = res.data;
+            }
+          }
+        }
+      }
+      Object.assign(data, state);
       Object.defineProperty(this, 'state', {
         get: function() { return this.data; }
       });
