@@ -78,7 +78,7 @@ function createHelpers(actions) {
       return this.data;
     },
     dispatch(type, payload) {
-        console.log('tt', this);
+      console.log('tt', this);
       const actionCache = Object.assign({}, actions, this);
       const actionFunc = actionCache[type];
       if (!actionFunc) {
