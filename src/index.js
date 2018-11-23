@@ -4,9 +4,9 @@ import EventEmitter from './emitter';
 const emitter = new EventEmitter();
 
 // for dev tools in future
-function logger() {
-  return console.info.apply(this, arguments);
-}
+// function logger() {
+//   return console.info.apply(this, arguments);
+// }
 
 function isObject(obj) {
   return Object.prototype.toString.call(obj) === '[object Object]';
@@ -68,12 +68,12 @@ function createHelpers(actions) {
           })
         }
       }
-      logger('%c prev state', 'color: #9E9E9E; font-weight: bold', this.data);
-      logger(`%c mutation: ${type}`, 'color: #03A9F4; font-weight: bold', payload, new Date().getTime());
+      // logger('%c prev state', 'color: #9E9E9E; font-weight: bold', this.data);
+      // logger(`%c mutation: ${type}`, 'color: #03A9F4; font-weight: bold', payload, new Date().getTime());
       const finalMutation = mutationCache[option.mutationFunc] ? mutationCache[option.mutationFunc](payload, this.data) : option.mutationFunc(payload, this.data);
       this.setData(finalMutation);
       emitter.emitEvent('updateState', this.data);
-      logger('%c next state', 'color: #4CAF50; font-weight: bold', this.data);
+      // logger('%c next state', 'color: #4CAF50; font-weight: bold', this.data);
       // commit 的结果是一个同步行为
       return this.data;
     },
@@ -85,7 +85,7 @@ function createHelpers(actions) {
         throw new Error('not found an action');
       }
       const self = this;
-      logger(`%c action ${type} dispatching`, 'color: #9E9E9E; font-weight: bold', payload);
+      // logger(`%c action ${type} dispatching`, 'color: #9E9E9E; font-weight: bold', payload);
       const res = actionFunc.call(self, {
         commit: this.commit.bind(self),
         dispatch: this.dispatch.bind(self),
